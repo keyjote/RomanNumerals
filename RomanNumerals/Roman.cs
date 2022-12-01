@@ -1,4 +1,6 @@
-﻿namespace RomanNumerals;
+﻿using System.Collections.ObjectModel;
+
+namespace RomanNumerals;
 public static class Romans
 {
     public static IDictionary<int, string> Translator = new Dictionary<int, string>
@@ -27,26 +29,26 @@ public static class Romans
                 throw new ArgumentException("Value has reach the limit of the roman numerals, this value cannot be represented.");
             default:
             {
-                var result = _toRomans2(number);
+                using var enumerator = Translator.GetEnumerator();
+                enumerator.MoveNext();
+                var result = _toRomans2(number, enumerator);
                 return result;
             }
         }
     }
 
-    private static string _toRomans2(int number, int translatorIndex = 0)
+    private static string _toRomans2(int number, IEnumerator<KeyValuePair<int, string>> enumerator)
     {
-        foreach (var keyValue in Translator)
+        while (number < enumerator.Current.Key)
         {
-            if (number < keyValue.Key)
+            var isThereNext = enumerator.MoveNext();
+            if (!isThereNext)
             {
-                translatorIndex++;
-                continue;
+                return string.Empty;
             }
-            // else
-            return keyValue.Value + _toRomans2(number - keyValue.Key, translatorIndex);
         }
-
-        return string.Empty;
+        // else
+        return enumerator.Current.Value + _toRomans2(number - enumerator.Current.Key, enumerator);
     }
 
     /*
